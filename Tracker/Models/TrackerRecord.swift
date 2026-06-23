@@ -2,7 +2,12 @@
 //  TrackerRecord.swift
 //  Tracker
 //
-//  Created by Albina Musugalieva on 22.06.2026.
+//  Created by Albina Musugalieva.
 //
 
 import Foundation
+
+struct TrackerRecord {
+    let trackerId: UUID
+    let date: Date               
+}

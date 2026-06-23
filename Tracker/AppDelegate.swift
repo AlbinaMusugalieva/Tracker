@@ -2,7 +2,7 @@
 //  AppDelegate.swift
 //  Tracker
 //
-//  Created by Albina Musugalieva on 20.06.2026.
+//  Created by Albina Musugalieva.
 //
 
 import UIKit
