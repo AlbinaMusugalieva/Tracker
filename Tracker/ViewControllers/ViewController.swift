@@ -14,26 +14,17 @@ final class ViewController: UITabBarController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupMainTabBar()
-        
     }
     
     private func setupMainTabBar(){
-        
         tabBar.tintColor = .systemBlue
         tabBar.unselectedItemTintColor = .systemGray
         tabBar.backgroundColor = .systemBackground
         
-        let trackersNC = UINavigationController(rootViewController: trackerViewController)
-        let statisticsNC = UINavigationController(rootViewController: statisticsViewController)
+        let trackersNavigationController = UINavigationController(rootViewController: trackerViewController)
+        let statisticsNavigationController = UINavigationController(rootViewController: statisticsViewController)
         
-//        trackersNC.tabBarItem = trackerViewController.tabBarItem
-//        statisticsNC.tabBarItem = statisticsViewController.tabBarItem
-//        
-//        trackersNC.title = nil
-//            statisticsNC.title = nil
-        
-        viewControllers = [trackersNC, statisticsNC]
-        
+        viewControllers = [trackersNavigationController, statisticsNavigationController]
     }
 }
 
