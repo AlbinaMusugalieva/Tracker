@@ -19,6 +19,7 @@ final class CreateTrackerViewController: UIViewController {
     private let optionsTableView = UITableView()
     private let cancelButton = UIButton(type: .system)
     private let buttonsStackView = UIStackView()
+    private let errorLabel = UILabel()
     
     private var selectedDays: [Int] = []
     
@@ -45,6 +46,7 @@ final class CreateTrackerViewController: UIViewController {
         nameTrackerTextField.font = .systemFont(ofSize: 17, weight: .regular)
         nameTrackerTextField.backgroundColor = .ypBackground
         nameTrackerTextField.layer.cornerRadius = 16
+        nameTrackerTextField.clearButtonMode = .whileEditing
         
         let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 0))
         nameTrackerTextField.leftView = paddingView
@@ -52,6 +54,14 @@ final class CreateTrackerViewController: UIViewController {
         view.addSubview(nameTrackerTextField)
         nameTrackerTextField.translatesAutoresizingMaskIntoConstraints = false
         nameTrackerTextField.delegate = self
+        
+        errorLabel.text = "Ограничение 38 символов"
+        errorLabel.font = .systemFont(ofSize: 17, weight: .regular)
+        errorLabel.textColor = .ypRed
+        errorLabel.textAlignment = .center
+        errorLabel.isHidden = true
+        view.addSubview(errorLabel)
+        errorLabel.translatesAutoresizingMaskIntoConstraints = false
         
         optionsTableView.backgroundColor = .ypBackground
         optionsTableView.layer.cornerRadius = 16
@@ -100,7 +110,12 @@ final class CreateTrackerViewController: UIViewController {
             nameTrackerTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             nameTrackerTextField.heightAnchor.constraint(equalToConstant: 75),
             
-            optionsTableView.topAnchor.constraint(equalTo: nameTrackerTextField.bottomAnchor, constant: 24),
+            errorLabel.topAnchor.constraint(equalTo: nameTrackerTextField.bottomAnchor, constant: 8),
+            errorLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            errorLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            
+            
+            optionsTableView.topAnchor.constraint(equalTo: errorLabel.bottomAnchor, constant: 24),
             optionsTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             optionsTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             optionsTableView.heightAnchor.constraint(equalToConstant: 150),
@@ -126,8 +141,9 @@ final class CreateTrackerViewController: UIViewController {
     
     private func checkValidation() {
         let isTextFieldNotEmpty = !(nameTrackerTextField.text?.trimmingCharacters(in: .whitespaces).isEmpty ?? true)
-        
-        if isTextFieldNotEmpty {
+        let currentText = nameTrackerTextField.text ?? ""
+        let limitTextLength = currentText.count <= 38
+        if isTextFieldNotEmpty && limitTextLength{
             createButton.isEnabled = true
             createButton.backgroundColor = .ypBlack
         } else {
@@ -216,7 +232,29 @@ extension CreateTrackerViewController: UITextFieldDelegate {
         textField.resignFirstResponder()
         return true
     }
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        let currentText = textField.text ?? ""
+        guard let stringRange = Range(range, in: currentText) else { return false }
+        let updatedText = currentText.replacingCharacters(in: stringRange, with: string)
+        if updatedText.count > 38 {
+            errorLabel.isHidden = false
+            checkValidation()
+            return false
+        }
+        else {
+            errorLabel.isHidden = true
+            return true
+        }
+    }
+    
+    func textFieldShouldClear(_ textField: UITextField) -> Bool {
+        errorLabel.isHidden = true
+        createButton.isEnabled = false
+        createButton.backgroundColor = .ypGray
+        return true
+    }
 }
+
 
 extension CreateTrackerViewController: ScheduleViewControllerDelegate {
     func scheduleViewController(_ vc: ScheduleViewController, didSelectDays days: [Int]) {
@@ -225,4 +263,3 @@ extension CreateTrackerViewController: ScheduleViewControllerDelegate {
         optionsTableView.reloadData()
     }
 }
-

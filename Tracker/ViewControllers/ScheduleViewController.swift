@@ -32,6 +32,7 @@ class ScheduleViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        view.backgroundColor = .ypWhite
         setupViews()
     }
     
@@ -100,6 +101,7 @@ extension ScheduleViewController: UITableViewDataSource, UITableViewDelegate {
         let cell = UITableViewCell(style: .default, reuseIdentifier: "WeekDayCell")
         cell.backgroundColor = .clear
         cell.textLabel?.font = .systemFont(ofSize: 17, weight: .regular)
+        cell.textLabel?.textColor = .label 
         cell.textLabel?.text = weekDays[indexPath.row]
         
         let switchView = UISwitch()

@@ -63,15 +63,13 @@ final class TrackersViewController: UIViewController {
         
         setupInitialState()
         setupCollectionView()
-        showVisibleTrackers()
-        
+        reloadVisibleTrackers()
     }
     
     private func setupTrackersNavigationBar(){
         
         navigationController?.navigationBar.prefersLargeTitles = true
         navigationItem.title = "Трекеры"
-        
         
         let plusButton = UIBarButtonItem(
             image: UIImage(resource: .plus),
@@ -91,7 +89,6 @@ final class TrackersViewController: UIViewController {
         
         searchController.searchBar.placeholder = "Поиск"
         searchController.obscuresBackgroundDuringPresentation = false
-        
         
         navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = false
@@ -147,6 +144,12 @@ final class TrackersViewController: UIViewController {
     }
     
     func trackerCompletion(id: UUID, date: Date) {
+        let calendar = Calendar.current
+        if calendar.compare(date, to: Date(), toGranularity: .day) == .orderedDescending {
+            print("Ошибка: нельзя отметить трекер для будущей даты")
+            return
+        }
+        
         let index = completedTrackers.firstIndex { record in
             record.trackerId == id && Calendar.current.isDate(record.date, inSameDayAs: date)
         }
@@ -157,7 +160,7 @@ final class TrackersViewController: UIViewController {
             let newRecord = TrackerRecord(trackerId: id, date: date)
             completedTrackers.append(newRecord)
         }
-        
+        collectionView.reloadData()
     }
     
     func addNewTracker(_ tracker: Tracker, toCategoryWithTitle categoryTitle: String) {
@@ -183,7 +186,33 @@ final class TrackersViewController: UIViewController {
         
         self.categories = newCategories
         
+        reloadVisibleTrackers()
+    }
+    
+    private func reloadVisibleTrackers() {
+        let calendar = Calendar.current
+        let filterWeekDay = calendar.component(.weekday, from: currentDate)
+        
+        let currentWeekDayIndex = filterWeekDay == 1 ? 6 : filterWeekDay - 2
+        guard let currentWeekDay = WeekDay(rawValue: currentWeekDayIndex) else { return }
+        
+        var filteredCategories: [TrackerCategory] = []
+        
+        for category in categories {
+            let filteredTrackers = category.trackers.filter { tracker in
+                tracker.schedule.contains(currentWeekDay)
+            }
+            
+            if !filteredTrackers.isEmpty {
+                let newCategory = TrackerCategory(title: category.title, trackers: filteredTrackers)
+                filteredCategories.append(newCategory)
+            }
+        }
+        
+        self.visibleCategories = filteredCategories
+        
         collectionView.reloadData()
+        showVisibleTrackers()
     }
     
     @objc private func plusButtonTapped() {
@@ -195,7 +224,8 @@ final class TrackersViewController: UIViewController {
     }
     
     @objc private func dateChanged(_ sender: UIDatePicker) {
-        print("Выбрана дата: \(sender.date)")
+        self.currentDate = sender.date
+        reloadVisibleTrackers()
     }
 }
 extension TrackersViewController: UICollectionViewDelegateFlowLayout {
@@ -227,28 +257,28 @@ extension TrackersViewController: UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "TrackerCell", for: indexPath) as? TrackerCell else {
-               return UICollectionViewCell()
-           }
-           
-           let tracker = visibleCategories[indexPath.section].trackers[indexPath.row]
-           
-           let isCompleted = completedTrackers.contains { record in
-               record.trackerId == tracker.id && Calendar.current.isDate(record.date, inSameDayAs: currentDate)
-           }
-           
-           let completedDays = completedTrackers.filter { $0.trackerId == tracker.id }.count
-           
-           cell.configure(with: tracker, completedDays: completedDays, isCompleted: isCompleted)
-           
-           cell.completionButtonTappedHandler = { [weak self] in
-               guard let self = self else { return }
-               
-               self.trackerCompletion(id: tracker.id, date: self.currentDate)
-               
-               collectionView.reloadItems(at: [indexPath])
-           }
-           
-           return cell
+            return UICollectionViewCell()
+        }
+        
+        let tracker = visibleCategories[indexPath.section].trackers[indexPath.row]
+        
+        let isCompleted = completedTrackers.contains { record in
+            record.trackerId == tracker.id && Calendar.current.isDate(record.date, inSameDayAs: currentDate)
+        }
+        
+        let completedDays = completedTrackers.filter { $0.trackerId == tracker.id }.count
+        
+        cell.configure(with: tracker, completedDays: completedDays, isCompleted: isCompleted)
+        
+        cell.completionButtonTappedHandler = { [weak self] in
+            guard let self = self else { return }
+            
+            self.trackerCompletion(id: tracker.id, date: self.currentDate)
+            
+            collectionView.reloadItems(at: [indexPath])
+        }
+        
+        return cell
     }
 }
 
@@ -256,11 +286,6 @@ extension TrackersViewController: CreateTrackerViewControllerDelegate {
     func createTrackerViewController(_ vc: CreateTrackerViewController, didCreateTracker tracker: Tracker, toCategory categoryTitle: String) {
         
         addNewTracker(tracker, toCategoryWithTitle: categoryTitle)
-        
-        self.visibleCategories = self.categories
-        
-        showVisibleTrackers()
-        
-        collectionView.reloadData()
+        reloadVisibleTrackers()
     }
 }
