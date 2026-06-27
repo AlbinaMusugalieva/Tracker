@@ -192,6 +192,9 @@ extension CreateTrackerViewController: UITableViewDataSource, UITableViewDelegat
         cell.textLabel?.font = .systemFont(ofSize: 17, weight: .regular)
         cell.accessoryType = .disclosureIndicator
         
+        cell.detailTextLabel?.font = .systemFont(ofSize: 17, weight: .regular)
+        cell.detailTextLabel?.textColor = .ypGray
+        
         if indexPath.row == 0 {
             cell.textLabel?.text = "Категория"
             cell.detailTextLabel?.text = nil
