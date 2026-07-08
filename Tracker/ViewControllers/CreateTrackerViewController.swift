@@ -13,16 +13,125 @@ protocol CreateTrackerViewControllerDelegate: AnyObject {
 final class CreateTrackerViewController: UIViewController {
     weak var delegate: CreateTrackerViewControllerDelegate?
     
-    private let titleLabel = UILabel()
-    private let nameTrackerTextField = UITextField()
-    private let createButton = UIButton(type: .system)
-    private let optionsTableView = UITableView()
-    private let cancelButton = UIButton(type: .system)
-    private let buttonsStackView = UIStackView()
-    private let errorLabel = UILabel()
-    private let scrollView = UIScrollView()
-    private var collectionView: UICollectionView!
-    private let contentView = UIView()
+    private lazy var titleLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Новая привычка"
+        label.font = .systemFont(ofSize: 16, weight: .medium)
+        label.textColor = .label
+        label.textAlignment = .center
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    private lazy var scrollView: UIScrollView = {
+        let scroll = UIScrollView()
+        scroll.translatesAutoresizingMaskIntoConstraints = false
+        return scroll
+    }()
+    
+    private lazy var contentView: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
+    private lazy var nameTrackerTextField: UITextField = {
+        let textField = UITextField()
+        textField.placeholder = "Введите название трекера"
+        textField.font = .systemFont(ofSize: 17, weight: .regular)
+        textField.backgroundColor = .ypBackground
+        textField.layer.cornerRadius = 16
+        textField.clearButtonMode = .whileEditing
+        
+        let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 0))
+        textField.leftView = paddingView
+        textField.leftViewMode = .always
+        textField.delegate = self
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        return textField
+    }()
+    
+    private lazy var errorLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Ограничение 38 символов"
+        label.font = .systemFont(ofSize: 17, weight: .regular)
+        label.textColor = .ypRed
+        label.textAlignment = .center
+        label.isHidden = true
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    private lazy var optionsTableView: UITableView = {
+        let tableView = UITableView()
+        tableView.backgroundColor = .ypBackground
+        tableView.layer.cornerRadius = 16
+        tableView.isScrollEnabled = false
+        tableView.separatorStyle = .singleLine
+        tableView.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
+        tableView.dataSource = self
+        tableView.delegate = self
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        return tableView
+    }()
+    
+    
+    
+    private lazy var collectionView: UICollectionView = {
+        let layout = UICollectionViewFlowLayout()
+        let collection = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        collection.backgroundColor = .clear
+        collection.isScrollEnabled = false
+        collection.dataSource = self
+        collection.delegate = self
+        
+        collection.register(EmojiCell.self, forCellWithReuseIdentifier: EmojiCell.identifier)
+        collection.register(ColorCell.self, forCellWithReuseIdentifier: ColorCell.identifier)
+        collection.register(HeaderSectionView.self,
+                            forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
+                            withReuseIdentifier: HeaderSectionView.identifier)
+        collection.translatesAutoresizingMaskIntoConstraints = false
+        return collection
+    }()
+    
+    private lazy var cancelButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("Отменить", for: .normal)
+        button.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
+        button.setTitleColor(.ypRed, for: .normal)
+        button.backgroundColor = .clear
+        button.layer.cornerRadius = 16
+        button.layer.borderWidth = 1
+        button.layer.borderColor = UIColor.ypRed.cgColor
+        button.addTarget(self, action: #selector(cancelButtonTapped), for: .touchUpInside)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+    
+    private lazy var createButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("Создать", for: .normal)
+        button.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
+        button.setTitleColor(.ypWhite, for: .normal)
+        button.backgroundColor = .ypGray
+        button.layer.cornerRadius = 16
+        button.isEnabled = false
+        button.addTarget(self, action: #selector(createButtonTapped), for: .touchUpInside)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+    
+    private lazy var buttonsStackView: UIStackView = {
+        let stackView = UIStackView()
+        stackView.axis = .horizontal
+        stackView.distribution = .fillEqually
+        stackView.spacing = 8
+        stackView.addArrangedSubview(cancelButton)
+        stackView.addArrangedSubview(createButton)
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        return stackView
+    }()
+    
     
     private var selectedEmojiIndexPath: IndexPath?
     private var selectedColorIndexPath: IndexPath?
@@ -35,152 +144,71 @@ final class CreateTrackerViewController: UIViewController {
     ]
     
     private var selectedDays: [Int] = []
+    private var selectedCategoryName: String?
     
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         
-        setupCollectionView()
         setupViews()
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(hideKeyboard))
         tapGesture.cancelsTouchesInView = false
         view.addGestureRecognizer(tapGesture)
     }
-       
-    private func setupCollectionView() {
-        let layout = UICollectionViewFlowLayout()
-        collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        collectionView.backgroundColor = .clear
-        collectionView.isScrollEnabled = false
-        
-        collectionView.dataSource = self
-        collectionView.delegate = self
-        
-        collectionView.register(EmojiCell.self, forCellWithReuseIdentifier: EmojiCell.identifier)
-        collectionView.register(ColorCell.self, forCellWithReuseIdentifier: ColorCell.identifier)
-        collectionView.register(HeaderSectionView.self,
-                                forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
-                                withReuseIdentifier: HeaderSectionView.identifier)
-    }
+    
+    
     private func setupViews() {
-        
-        titleLabel.text = "Новая привычка"
-        titleLabel.font = .systemFont(ofSize: 16, weight: .medium)
-        titleLabel.textColor = .label
-        titleLabel.textAlignment = .center
         view.addSubview(titleLabel)
-        titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        contentView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(scrollView)
         scrollView.addSubview(contentView)
-        
-        nameTrackerTextField.placeholder = "Введите название трекера"
-        nameTrackerTextField.font = .systemFont(ofSize: 17, weight: .regular)
-        nameTrackerTextField.backgroundColor = .ypBackground
-        nameTrackerTextField.layer.cornerRadius = 16
-        nameTrackerTextField.clearButtonMode = .whileEditing
-        
-        let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 0))
-        nameTrackerTextField.leftView = paddingView
-        nameTrackerTextField.leftViewMode = .always
         view.addSubview(nameTrackerTextField)
-        nameTrackerTextField.translatesAutoresizingMaskIntoConstraints = false
-        nameTrackerTextField.delegate = self
-        
-        errorLabel.text = "Ограничение 38 символов"
-        errorLabel.font = .systemFont(ofSize: 17, weight: .regular)
-        errorLabel.textColor = .ypRed
-        errorLabel.textAlignment = .center
-        errorLabel.isHidden = true
         view.addSubview(errorLabel)
-        errorLabel.translatesAutoresizingMaskIntoConstraints = false
-        
-        optionsTableView.backgroundColor = .ypBackground
-        optionsTableView.layer.cornerRadius = 16
-        optionsTableView.isScrollEnabled = false
-        optionsTableView.separatorStyle = .singleLine
-        optionsTableView.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
-        
-        optionsTableView.dataSource = self
-        optionsTableView.delegate = self
-        
-        
-        optionsTableView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(optionsTableView)
-        
-        
-        collectionView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(collectionView)
-        
-        cancelButton.setTitle("Отменить", for: .normal)
-        cancelButton.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
-        cancelButton.setTitleColor(.ypRed, for: .normal)
-        cancelButton.backgroundColor = .clear
-        cancelButton.layer.cornerRadius = 16
-        cancelButton.layer.borderWidth = 1
-        cancelButton.layer.borderColor = UIColor.ypRed.cgColor
-        cancelButton.addTarget(self, action: #selector(cancelButtonTapped), for: .touchUpInside)
-        
-        createButton.setTitle("Создать", for: .normal)
-        createButton.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
-        createButton.setTitleColor(.ypWhite, for: .normal)
-        createButton.backgroundColor = .ypGray
-        createButton.layer.cornerRadius = 16
-        createButton.isEnabled = false
-        createButton.addTarget(self, action: #selector(createButtonTapped), for: .touchUpInside)
-        
-        buttonsStackView.axis = .horizontal
-        buttonsStackView.distribution = .fillEqually
-        buttonsStackView.spacing = 8
-        
         buttonsStackView.addArrangedSubview(cancelButton)
         buttonsStackView.addArrangedSubview(createButton)
         view.addSubview(buttonsStackView)
-        buttonsStackView.translatesAutoresizingMaskIntoConstraints = false
-        
         
         NSLayoutConstraint.activate([
             titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 27),
-                        titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-                        
-                        scrollView.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 14),
-                        scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-                        scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-                        scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
-                        
-                        contentView.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
-                        contentView.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
-                        contentView.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor),
-                        contentView.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
-                        contentView.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor),
-                        
-                        nameTrackerTextField.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 24),
-                        nameTrackerTextField.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-                        nameTrackerTextField.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-                        nameTrackerTextField.heightAnchor.constraint(equalToConstant: 75),
-                        
-                        errorLabel.topAnchor.constraint(equalTo: nameTrackerTextField.bottomAnchor, constant: 8),
-                        errorLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-                        errorLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-                        
-                        optionsTableView.topAnchor.constraint(equalTo: errorLabel.bottomAnchor, constant: 24),
-                        optionsTableView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-                        optionsTableView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-                        optionsTableView.heightAnchor.constraint(equalToConstant: 150),
-                        
-  
-                        collectionView.topAnchor.constraint(equalTo: optionsTableView.bottomAnchor, constant: 32),
-                        collectionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-                        collectionView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-                        collectionView.heightAnchor.constraint(equalToConstant: 444),
-                       
-                        buttonsStackView.topAnchor.constraint(equalTo: collectionView.bottomAnchor, constant: 16),
-                        buttonsStackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
-                        buttonsStackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
-                        buttonsStackView.heightAnchor.constraint(equalToConstant: 60),
-                        buttonsStackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -16)
+            titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            
+            scrollView.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 14),
+            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            
+            contentView.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
+            contentView.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
+            contentView.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor),
+            contentView.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
+            contentView.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor),
+            
+            nameTrackerTextField.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 24),
+            nameTrackerTextField.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            nameTrackerTextField.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            nameTrackerTextField.heightAnchor.constraint(equalToConstant: 75),
+            
+            errorLabel.topAnchor.constraint(equalTo: nameTrackerTextField.bottomAnchor, constant: 8),
+            errorLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            errorLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            
+            optionsTableView.topAnchor.constraint(equalTo: errorLabel.bottomAnchor, constant: 24),
+            optionsTableView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            optionsTableView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            optionsTableView.heightAnchor.constraint(equalToConstant: 150),
+            
+            
+            collectionView.topAnchor.constraint(equalTo: optionsTableView.bottomAnchor, constant: 32),
+            collectionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            collectionView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            collectionView.heightAnchor.constraint(equalToConstant: 444),
+            
+            buttonsStackView.topAnchor.constraint(equalTo: collectionView.bottomAnchor, constant: 16),
+            buttonsStackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            buttonsStackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
+            buttonsStackView.heightAnchor.constraint(equalToConstant: 60),
+            buttonsStackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -16)
         ])
     }
     
@@ -202,13 +230,10 @@ final class CreateTrackerViewController: UIViewController {
         let limitTextLength = currentText.count <= 38
         let isEmojiSelected = selectedEmojiIndexPath != nil
         let isColorSelected = selectedColorIndexPath != nil
-        if isTextFieldNotEmpty && limitTextLength && isEmojiSelected && isColorSelected {
-            createButton.isEnabled = true
-            createButton.backgroundColor = .ypBlack
-        } else {
-            createButton.isEnabled = false
-            createButton.backgroundColor = .ypGray
-        }
+        let isCategorySelected = selectedCategoryName != nil
+        let isEnabled: Bool = isTextFieldNotEmpty && limitTextLength && isEmojiSelected && isColorSelected && isCategorySelected
+        createButton.isEnabled = isEnabled
+        createButton.backgroundColor = isEnabled ? .ypBlack : .ypGray
     }
     
     @objc private func cancelButtonTapped() {
@@ -216,7 +241,7 @@ final class CreateTrackerViewController: UIViewController {
     }
     
     @objc private func createButtonTapped() {
-        guard let trackerName = nameTrackerTextField.text, !trackerName.isEmpty,let emojiIndex = selectedEmojiIndexPath?.row,let colorIndex = selectedColorIndexPath?.row  else { return }
+        guard let trackerName = nameTrackerTextField.text, !trackerName.isEmpty,let emojiIndex = selectedEmojiIndexPath?.row,let colorIndex = selectedColorIndexPath?.row, let categoryTitle = selectedCategoryName  else { return }
         
         let weekDaysArray = selectedDays.compactMap { WeekDay(rawValue: $0) }
         let scheduleSet = Set(weekDaysArray)
@@ -230,14 +255,14 @@ final class CreateTrackerViewController: UIViewController {
         )
         
         let trackerStore = TrackerStore()
-           do {
-               try trackerStore.createTracker(newTracker, toCategoryTitle: "Важное")
-                  delegate?.createTrackerViewController(self, didCreateTracker: newTracker, toCategory: "Важное")
-
-               dismiss(animated: true, completion: nil)
-           } catch {
-               print("Ошибка сохранения трекера в Core Data: \(error)")
-           }
+        do {
+            try trackerStore.createTracker(newTracker, toCategoryTitle: categoryTitle)
+            delegate?.createTrackerViewController(self, didCreateTracker: newTracker, toCategory: categoryTitle)
+            
+            dismiss(animated: true, completion: nil)
+        } catch {
+            print("Ошибка сохранения трекера в Core Data: \(error)")
+        }
     }
     
     @objc private func hideKeyboard() {
@@ -262,7 +287,11 @@ extension CreateTrackerViewController: UITableViewDataSource, UITableViewDelegat
         
         if indexPath.row == 0 {
             cell.textLabel?.text = "Категория"
-            cell.detailTextLabel?.text = nil
+            if let selectedCategoryName = selectedCategoryName {
+                cell.detailTextLabel?.text = selectedCategoryName
+            } else {
+                cell.detailTextLabel?.text = ""
+            }
         } else {
             cell.textLabel?.text = "Расписание"
             cell.detailTextLabel?.text = convertDaysToText(days: selectedDays)
@@ -278,7 +307,18 @@ extension CreateTrackerViewController: UITableViewDataSource, UITableViewDelegat
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         if indexPath.row == 0 {
-            //Категория, реализация в будущем
+            let store = TrackerCategoryStore()
+            let categoryViewModel = CategoryViewModel(categoryStore: store, selectedCategoryTitle: self.selectedCategoryName)
+            let categoryVC = CategoryViewController(viewModel: categoryViewModel)
+            
+            categoryViewModel.onCategorySelected = { [weak self] selectedCategoryTitle in
+                guard let self = self else { return }
+                self.selectedCategoryName = selectedCategoryTitle
+                self.optionsTableView.reloadData()
+                self.checkValidation() 
+            }
+            let navigationController = UINavigationController(rootViewController: categoryVC)
+            present(navigationController, animated: true)
         } else {
             if indexPath.row == 1 {
                 let scheduleViewController = ScheduleViewController(selectedDays: self.selectedDays)
@@ -379,20 +419,16 @@ extension CreateTrackerViewController: UICollectionViewDataSource {
     }
 }
 
-// MARK: - UICollectionViewDelegateFlowLayout
 extension CreateTrackerViewController: UICollectionViewDelegateFlowLayout {
     
-    // Фиксированный размер ячеек 52x52 из Фигмы Практикума
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         return CGSize(width: 52, height: 52)
     }
     
-    // Стандартные отступы секции из ТЗ (18 слева и справа)
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
         return UIEdgeInsets(top: 24, left: 18, bottom: 24, right: 18)
     }
     
-    // Минимальный отступ между ячейками
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
         return 5
     }

@@ -11,14 +11,45 @@ protocol ScheduleViewControllerDelegate: AnyObject {
     func scheduleViewController(_ vc: ScheduleViewController, didSelectDays days: [Int])
 }
 
-class ScheduleViewController: UIViewController {
+final class ScheduleViewController: UIViewController {
     weak var delegate: ScheduleViewControllerDelegate?
     private let weekDays = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"]
     private var selectedDays: [Int] = []
     
-    private let titleLabel = UILabel()
-    private let scheduleTableView = UITableView()
-    private let doneButton = UIButton(type: .system)
+    private lazy var titleLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Расписание"
+        label.font = .systemFont(ofSize: 16, weight: .medium)
+        label.textColor = .label
+        label.textAlignment = .center
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    private lazy var scheduleTableView: UITableView = {
+        let tableView = UITableView()
+        tableView.backgroundColor = .ypBackground
+        tableView.layer.cornerRadius = 16
+        tableView.isScrollEnabled = false
+        tableView.separatorStyle = .singleLine
+        tableView.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
+        tableView.dataSource = self
+        tableView.delegate = self
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        return tableView
+    }()
+    
+    private lazy var doneButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("Готово", for: .normal)
+        button.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
+        button.setTitleColor(.ypWhite, for: .normal)
+        button.backgroundColor = .ypBlack
+        button.layer.cornerRadius = 16
+        button.addTarget(self, action: #selector(doneButtonTapped), for: .touchUpInside)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
     
     init(selectedDays: [Int]) {
         self.selectedDays = selectedDays
@@ -37,33 +68,9 @@ class ScheduleViewController: UIViewController {
     }
     
     private func setupViews(){
-        
-        titleLabel.text = "Расписание"
-        titleLabel.font = .systemFont(ofSize: 16, weight: .medium)
-        titleLabel.textColor = .label
-        titleLabel.textAlignment = .center
         view.addSubview(titleLabel)
-        titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        
-        scheduleTableView.backgroundColor = .ypBackground
-        scheduleTableView.layer.cornerRadius = 16
-        scheduleTableView.isScrollEnabled = false
-        scheduleTableView.separatorStyle = .singleLine
-        scheduleTableView.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
-        
-        scheduleTableView.dataSource = self
-        scheduleTableView.delegate = self
         view.addSubview(scheduleTableView)
-        scheduleTableView.translatesAutoresizingMaskIntoConstraints = false
-        
-        doneButton.setTitle("Готово", for: .normal)
-        doneButton.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
-        doneButton.setTitleColor(.ypWhite, for: .normal)
-        doneButton.backgroundColor = .ypBlack
-        doneButton.layer.cornerRadius = 16
-        doneButton.addTarget(self, action: #selector(doneButtonTapped), for: .touchUpInside)
         view.addSubview(doneButton)
-        doneButton.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
             
@@ -101,7 +108,7 @@ extension ScheduleViewController: UITableViewDataSource, UITableViewDelegate {
         let cell = UITableViewCell(style: .default, reuseIdentifier: "WeekDayCell")
         cell.backgroundColor = .clear
         cell.textLabel?.font = .systemFont(ofSize: 17, weight: .regular)
-        cell.textLabel?.textColor = .label 
+        cell.textLabel?.textColor = .label
         cell.textLabel?.text = weekDays[indexPath.row]
         
         let switchView = UISwitch()

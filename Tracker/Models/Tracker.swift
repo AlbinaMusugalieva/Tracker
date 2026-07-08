@@ -10,7 +10,7 @@ import UIKit
 enum WeekDay: Int, CaseIterable {
     case monday = 1, tuesday, wednesday, thursday, friday, saturday, sunday
     
-    var shortName: String {
+    var name: String {
         switch self {
         case .monday: return "Понедельник"
         case .tuesday: return "Вторник"
