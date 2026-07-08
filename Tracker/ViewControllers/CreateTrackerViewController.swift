@@ -230,7 +230,8 @@ final class CreateTrackerViewController: UIViewController {
         let limitTextLength = currentText.count <= 38
         let isEmojiSelected = selectedEmojiIndexPath != nil
         let isColorSelected = selectedColorIndexPath != nil
-        let isEnabled: Bool = isTextFieldNotEmpty && limitTextLength && isEmojiSelected && isColorSelected
+        let isCategorySelected = selectedCategoryName != nil
+        let isEnabled: Bool = isTextFieldNotEmpty && limitTextLength && isEmojiSelected && isColorSelected && isCategorySelected
         createButton.isEnabled = isEnabled
         createButton.backgroundColor = isEnabled ? .ypBlack : .ypGray
     }
@@ -240,7 +241,7 @@ final class CreateTrackerViewController: UIViewController {
     }
     
     @objc private func createButtonTapped() {
-        guard let trackerName = nameTrackerTextField.text, !trackerName.isEmpty,let emojiIndex = selectedEmojiIndexPath?.row,let colorIndex = selectedColorIndexPath?.row  else { return }
+        guard let trackerName = nameTrackerTextField.text, !trackerName.isEmpty,let emojiIndex = selectedEmojiIndexPath?.row,let colorIndex = selectedColorIndexPath?.row, let categoryTitle = selectedCategoryName  else { return }
         
         let weekDaysArray = selectedDays.compactMap { WeekDay(rawValue: $0) }
         let scheduleSet = Set(weekDaysArray)
@@ -255,8 +256,8 @@ final class CreateTrackerViewController: UIViewController {
         
         let trackerStore = TrackerStore()
         do {
-            try trackerStore.createTracker(newTracker, toCategoryTitle: "Важное")
-            delegate?.createTrackerViewController(self, didCreateTracker: newTracker, toCategory: "Важное")
+            try trackerStore.createTracker(newTracker, toCategoryTitle: categoryTitle)
+            delegate?.createTrackerViewController(self, didCreateTracker: newTracker, toCategory: categoryTitle)
             
             dismiss(animated: true, completion: nil)
         } catch {
@@ -314,6 +315,7 @@ extension CreateTrackerViewController: UITableViewDataSource, UITableViewDelegat
                 guard let self = self else { return }
                 self.selectedCategoryName = selectedCategoryTitle
                 self.optionsTableView.reloadData()
+                self.checkValidation() 
             }
             let navigationController = UINavigationController(rootViewController: categoryVC)
             present(navigationController, animated: true)
