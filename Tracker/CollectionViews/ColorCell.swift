@@ -10,22 +10,26 @@ import UIKit
 final class ColorCell: UICollectionViewCell {
     static let identifier = "ColorCell"
     
-    let colorView = UIView()
+    lazy var colorView: UIView = {
+        let view = UIView()
+        view.layer.cornerRadius = 8
+        view.layer.masksToBounds = true
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupViews()
     }
     
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        nil
     }
     
     private func setupViews(){
         contentView.addSubview(colorView)
-        colorView.layer.cornerRadius = 8
-        colorView.layer.masksToBounds = true
-        colorView.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
             colorView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 6),

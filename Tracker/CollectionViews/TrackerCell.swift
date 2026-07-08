@@ -8,11 +8,45 @@
 import UIKit
 
 final class TrackerCell: UICollectionViewCell {
-    private let colorView = UIView()
-    private let emojiLabel = UILabel()
-    private let titleLabel = UILabel()
-    private let daysLabel = UILabel()
-    private let trackerCompletionButton = UIButton(type: .system)
+    private lazy var colorView: UIView = {
+        let view = UIView()
+        view.layer.cornerRadius = 16
+        view.layer.masksToBounds = true
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
+    private lazy var emojiLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    private lazy var titleLabel: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 12, weight: .medium)
+        label.textColor = .ypWhite
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    private lazy var daysLabel: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 12, weight: .medium)
+        label.textColor = .ypBlack
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    private lazy var trackerCompletionButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.layer.cornerRadius = 17
+        button.layer.masksToBounds = true
+        button.tintColor = .ypWhite
+        button.addTarget(self, action: #selector(trackButtonTapped), for: .touchUpInside)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
     var completionButtonTappedHandler: (() -> Void)?
     
     override init (frame: CGRect){
@@ -20,36 +54,17 @@ final class TrackerCell: UICollectionViewCell {
         setupViews()
         
     }
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        nil
     }
     
     private func setupViews(){
         contentView.addSubview(colorView)
-        colorView.translatesAutoresizingMaskIntoConstraints = false
-        colorView.layer.cornerRadius = 16
-        colorView.layer.masksToBounds = true
-        
         colorView.addSubview(emojiLabel)
-        emojiLabel.translatesAutoresizingMaskIntoConstraints = false
-        
         colorView.addSubview(titleLabel)
-        titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        titleLabel.font = UIFont.systemFont(ofSize: 12, weight: .medium)
-        titleLabel.textColor = .white
-        
         contentView.addSubview(daysLabel)
-        daysLabel.translatesAutoresizingMaskIntoConstraints = false
-        daysLabel.font = UIFont.systemFont(ofSize: 12, weight: .medium)
-        daysLabel.textColor = .black
-        
         contentView.addSubview(trackerCompletionButton)
-        trackerCompletionButton.translatesAutoresizingMaskIntoConstraints = false
-        trackerCompletionButton.layer.cornerRadius = 17
-        trackerCompletionButton.layer.masksToBounds = true
-        trackerCompletionButton.tintColor = .white
-        trackerCompletionButton.addTarget(self, action: #selector(trackButtonTapped), for: .touchUpInside)
-
         
         NSLayoutConstraint.activate([
             colorView.topAnchor.constraint(equalTo: contentView.topAnchor),
@@ -93,14 +108,14 @@ final class TrackerCell: UICollectionViewCell {
         config.baseForegroundColor = .white
         
         let imageConfiguration = UIImage.SymbolConfiguration(pointSize: 11, weight: .regular)
-        let iconImage = isCompleted ? UIImage(systemName: "checkmark", withConfiguration: imageConfiguration) : UIImage(systemName: "plus", withConfiguration: imageConfiguration)
+        let iconImage = UIImage(systemName: isCompleted ? "checkmark" : "plus", withConfiguration: imageConfiguration)
         
         config.image = iconImage
         config.imagePlacement = .top
         config.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
         
         trackerCompletionButton.configuration = config
-            
+        
         trackerCompletionButton.alpha = isCompleted ? 0.5 : 1.0
     }
     
