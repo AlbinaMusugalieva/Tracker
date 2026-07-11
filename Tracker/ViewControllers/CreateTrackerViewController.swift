@@ -15,7 +15,7 @@ final class CreateTrackerViewController: UIViewController {
     
     private lazy var titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Новая привычка"
+        label.text = "createTracker.newHabit".localized()
         label.font = .systemFont(ofSize: 16, weight: .medium)
         label.textColor = .label
         label.textAlignment = .center
@@ -37,7 +37,7 @@ final class CreateTrackerViewController: UIViewController {
     
     private lazy var nameTrackerTextField: UITextField = {
         let textField = UITextField()
-        textField.placeholder = "Введите название трекера"
+        textField.placeholder = "createTracker.placeholder".localized()
         textField.font = .systemFont(ofSize: 17, weight: .regular)
         textField.backgroundColor = .ypBackground
         textField.layer.cornerRadius = 16
@@ -53,7 +53,7 @@ final class CreateTrackerViewController: UIViewController {
     
     private lazy var errorLabel: UILabel = {
         let label = UILabel()
-        label.text = "Ограничение 38 символов"
+        label.text = "createTracker.errorLimit".localized()
         label.font = .systemFont(ofSize: 17, weight: .regular)
         label.textColor = .ypRed
         label.textAlignment = .center
@@ -75,8 +75,6 @@ final class CreateTrackerViewController: UIViewController {
         return tableView
     }()
     
-    
-    
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         let collection = UICollectionView(frame: .zero, collectionViewLayout: layout)
@@ -96,7 +94,7 @@ final class CreateTrackerViewController: UIViewController {
     
     private lazy var cancelButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Отменить", for: .normal)
+        button.setTitle("cancel".localized(), for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
         button.setTitleColor(.ypRed, for: .normal)
         button.backgroundColor = .clear
@@ -110,7 +108,7 @@ final class CreateTrackerViewController: UIViewController {
     
     private lazy var createButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Создать", for: .normal)
+        button.setTitle("create".localized(), for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
         button.setTitleColor(.ypWhite, for: .normal)
         button.backgroundColor = .ypGray
@@ -132,7 +130,6 @@ final class CreateTrackerViewController: UIViewController {
         return stackView
     }()
     
-    
     private var selectedEmojiIndexPath: IndexPath?
     private var selectedColorIndexPath: IndexPath?
     
@@ -145,6 +142,9 @@ final class CreateTrackerViewController: UIViewController {
     
     private var selectedDays: [Int] = []
     private var selectedCategoryName: String?
+    private var isEditMode = false
+    private var editingTracker: Tracker?
+    private var originalCategoryName: String?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -155,7 +155,6 @@ final class CreateTrackerViewController: UIViewController {
         tapGesture.cancelsTouchesInView = false
         view.addGestureRecognizer(tapGesture)
     }
-    
     
     private func setupViews() {
         view.addSubview(titleLabel)
@@ -198,7 +197,6 @@ final class CreateTrackerViewController: UIViewController {
             optionsTableView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             optionsTableView.heightAnchor.constraint(equalToConstant: 150),
             
-            
             collectionView.topAnchor.constraint(equalTo: optionsTableView.bottomAnchor, constant: 32),
             collectionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             collectionView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
@@ -210,14 +208,23 @@ final class CreateTrackerViewController: UIViewController {
             buttonsStackView.heightAnchor.constraint(equalToConstant: 60),
             buttonsStackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -16)
         ])
+        
+        if isEditMode {
+            titleLabel.text = "createTracker.editHabit".localized()
+            createButton.setTitle("save".localized(), for: .normal)
+            nameTrackerTextField.text = editingTracker?.name
+            
+            createButton.isEnabled = true
+            createButton.backgroundColor = .ypBlack
+        }
     }
     
     private func convertDaysToText(days: [Int]) -> String? {
         if days.isEmpty { return nil }
         
-        if days.count == 7 { return "Каждый день" }
+        if days.count == 7 { return "weekday.everyday".localized() }
         
-        let shortNames = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
+        let shortNames = ["weekday.short.monday".localized(), "weekday.short.tuesday".localized(), "weekday.short.wednesday".localized(), "weekday.short.thursday".localized(), "weekday.short.friday".localized(), "weekday.short.saturday".localized(), "weekday.short.sunday".localized()]
         
         let convertedArray = days.map { shortNames[$0] }
         
@@ -234,6 +241,23 @@ final class CreateTrackerViewController: UIViewController {
         let isEnabled: Bool = isTextFieldNotEmpty && limitTextLength && isEmojiSelected && isColorSelected && isCategorySelected
         createButton.isEnabled = isEnabled
         createButton.backgroundColor = isEnabled ? .ypBlack : .ypGray
+    }
+    
+    func configureForEditing(tracker: Tracker, categoryName: String) {
+        self.isEditMode = true
+        self.editingTracker = tracker
+        self.originalCategoryName = categoryName
+        
+        self.selectedCategoryName = categoryName
+        
+        self.selectedDays = tracker.schedule.map { $0.rawValue }
+        
+        if let emojiIndex = emojis.firstIndex(of: tracker.emoji) {
+            self.selectedEmojiIndexPath = IndexPath(row: emojiIndex, section: 0)
+        }
+        if let colorIndex = colors.firstIndex(where: { $0.toColorString == tracker.color.toColorString }) {
+            self.selectedColorIndexPath = IndexPath(row: colorIndex, section: 1)
+        }
     }
     
     @objc private func cancelButtonTapped() {
@@ -255,13 +279,46 @@ final class CreateTrackerViewController: UIViewController {
         )
         
         let trackerStore = TrackerStore()
-        do {
-            try trackerStore.createTracker(newTracker, toCategoryTitle: categoryTitle)
-            delegate?.createTrackerViewController(self, didCreateTracker: newTracker, toCategory: categoryTitle)
+        if isEditMode {
+            guard let oldTracker = editingTracker else { return }
             
-            dismiss(animated: true, completion: nil)
-        } catch {
-            print("Ошибка сохранения трекера в Core Data: \(error)")
+            let updatedTracker = Tracker(
+                id: oldTracker.id,
+                name: trackerName,
+                color: colors[colorIndex],
+                emoji: emojis[emojiIndex],
+                schedule: scheduleSet,
+                isPinned: oldTracker.isPinned
+            )
+            
+            do {
+                try trackerStore.updateTracker(
+                    updatedTracker,
+                    oldCategory: originalCategoryName ?? "",
+                    newCategory: categoryTitle
+                )
+                dismiss(animated: true, completion: nil)
+            } catch {
+                print("Ошибка обновления трекера в Core Data: \(error)")
+            }
+            
+        } else {
+            let newTracker = Tracker(
+                id: UUID(),
+                name: trackerName,
+                color: colors[colorIndex],
+                emoji: emojis[emojiIndex],
+                schedule: scheduleSet
+            )
+            
+            do {
+                try trackerStore.createTracker(newTracker, toCategoryTitle: categoryTitle)
+                delegate?.createTrackerViewController(self, didCreateTracker: newTracker, toCategory: categoryTitle)
+                
+                dismiss(animated: true, completion: nil)
+            } catch {
+                print("Ошибка сохранения трекера в Core Data: \(error)")
+            }
         }
     }
     
@@ -286,14 +343,14 @@ extension CreateTrackerViewController: UITableViewDataSource, UITableViewDelegat
         cell.detailTextLabel?.textColor = .ypGray
         
         if indexPath.row == 0 {
-            cell.textLabel?.text = "Категория"
+            cell.textLabel?.text = "createTracker.category".localized()
             if let selectedCategoryName = selectedCategoryName {
                 cell.detailTextLabel?.text = selectedCategoryName
             } else {
                 cell.detailTextLabel?.text = ""
             }
         } else {
-            cell.textLabel?.text = "Расписание"
+            cell.textLabel?.text = "createTracker.schedule".localized()
             cell.detailTextLabel?.text = convertDaysToText(days: selectedDays)
         }
         
@@ -315,7 +372,7 @@ extension CreateTrackerViewController: UITableViewDataSource, UITableViewDelegat
                 guard let self = self else { return }
                 self.selectedCategoryName = selectedCategoryTitle
                 self.optionsTableView.reloadData()
-                self.checkValidation() 
+                self.checkValidation()
             }
             let navigationController = UINavigationController(rootViewController: categoryVC)
             present(navigationController, animated: true)
@@ -414,7 +471,7 @@ extension CreateTrackerViewController: UICollectionViewDataSource {
               let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: HeaderSectionView.identifier, for: indexPath) as? HeaderSectionView else {
             return UICollectionReusableView()
         }
-        header.titleLabel.text = indexPath.section == 0 ? "Emoji" : "Цвет"
+        header.titleLabel.text = indexPath.section == 0 ? "Emoji" : "createTracker.color".localized()
         return header
     }
 }

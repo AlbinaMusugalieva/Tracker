@@ -41,3 +41,9 @@ final class ScheduleConverter {
         return Set(days)
     }
 }
+
+extension String {
+    func localized() -> String {
+        return NSLocalizedString(self, comment: "")
+    }
+}

@@ -33,7 +33,7 @@ final class CategoryViewController: UIViewController {
     
     private lazy var placeholderLabel: UILabel = {
         let label = UILabel()
-        label.text = "Привычки и события можно\nобъединить по смыслу"
+        label.text = "emptyState.searchTitle".localized()
         label.font = .systemFont(ofSize: 12, weight: .medium)
         label.textColor = .ypBlack
         label.textAlignment = .center
@@ -44,7 +44,7 @@ final class CategoryViewController: UIViewController {
     
     private lazy var addCategoryButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Добавить категорию", for: .normal)
+        button.setTitle("category.add".localized(), for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
         button.setTitleColor(.ypWhite, for: .normal)
         button.backgroundColor = .ypBlack
@@ -94,7 +94,7 @@ final class CategoryViewController: UIViewController {
     
     private func setupViews() {
         view.backgroundColor = .ypWhite
-        title = "Категория"
+        title = "createTracker.category".localized()
         
         tableView.dataSource = self
         tableView.delegate = self

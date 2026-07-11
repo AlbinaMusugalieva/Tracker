@@ -23,7 +23,7 @@ final class OnboardingViewController: UIPageViewController, UIPageViewController
         pageControl.translatesAutoresizingMaskIntoConstraints = false
         return pageControl
     }()
-
+    
     private lazy var actionButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Вот это технологии!", for: .normal)
@@ -35,28 +35,28 @@ final class OnboardingViewController: UIPageViewController, UIPageViewController
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
-
+    
     init() {
         super.init(transitionStyle: .scroll, navigationOrientation: .horizontal, options: nil)
     }
-
+    
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         nil
     }
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         dataSource = self
         delegate = self
-
+        
         if let firstViewController = createContentViewController(at: 0) {
             setViewControllers([firstViewController], direction: .forward, animated: true)
         }
         
         setupViews()
     }
-
+    
     @objc private func didTapActionButton() {
         UserDefaults.standard.set(true, forKey: "hasSeenOnboarding")
         
@@ -68,22 +68,22 @@ final class OnboardingViewController: UIPageViewController, UIPageViewController
         window.rootViewController = ViewController()
         UIView.transition(with: window, duration: 0.3, options: .transitionCrossDissolve, animations: nil)
     }
-
+    
     private func setupViews() {
         view.addSubview(pageControl)
         view.addSubview(actionButton)
-
+        
         NSLayoutConstraint.activate([
             actionButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             actionButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             actionButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -50),
             actionButton.heightAnchor.constraint(equalToConstant: 60),
-
+            
             pageControl.bottomAnchor.constraint(equalTo: actionButton.topAnchor, constant: -24),
             pageControl.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
     }
-
+    
     private func createContentViewController(at index: Int) -> UIViewController? {
         guard index >= 0 && index < onboardingData.count else { return nil }
         
@@ -113,7 +113,7 @@ final class OnboardingViewController: UIPageViewController, UIPageViewController
             imageView.bottomAnchor.constraint(equalTo: contentViewController.view.bottomAnchor),
             imageView.leadingAnchor.constraint(equalTo: contentViewController.view.leadingAnchor),
             imageView.trailingAnchor.constraint(equalTo: contentViewController.view.trailingAnchor),
-
+            
             label.leadingAnchor.constraint(equalTo: contentViewController.view.leadingAnchor, constant: 16),
             label.trailingAnchor.constraint(equalTo: contentViewController.view.trailingAnchor, constant: -16),
             label.centerYAnchor.constraint(equalTo: contentViewController.view.centerYAnchor, constant: 60)
@@ -121,17 +121,17 @@ final class OnboardingViewController: UIPageViewController, UIPageViewController
         
         return contentViewController
     }
-
+    
     func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
         let currentIndex = viewController.view.tag
         return createContentViewController(at: currentIndex - 1)
     }
-
+    
     func pageViewController(_ pageViewController: UIPageViewController, viewControllerAfter viewController: UIViewController) -> UIViewController? {
         let currentIndex = viewController.view.tag
         return createContentViewController(at: currentIndex + 1)
     }
-
+    
     func pageViewController(_ pageViewController: UIPageViewController, didFinishAnimating finished: Bool, previousViewControllers: [UIViewController], transitionCompleted completed: Bool) {
         if completed,
            let currentViewController = pageViewController.viewControllers?.first {

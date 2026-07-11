@@ -1,0 +1,58 @@
+/* 
+  Localizable.strings
+  Tracker
+
+  Created by Albina Musugalieva.
+  
+*/
+"trackers.title" = "Трекеры";
+"statistics.title" = "Статистика";
+"search.placeholder" = "Поиск";
+"emptyState.title" = "Что будем отслеживать?";
+"emptyState.searchTitle" = "Ничего не найдено";
+"filters.button" = "Фильтры";
+"contextMenu.pinned" = "Закрепить";
+"contextMenu.unpinned" = "Открепить";
+"contextMenu.edit" = "Редактировать";
+"contextMenu.delete" = "Удалить";
+"cancel" = "Отменить";
+"create" = "Создать";
+"save" = "Сохранить";
+"statistics.empty" = "Анализировать пока нечего";
+"statistics.bestPeriod" = "Лучший период";
+"statistics.idealDays" = "Идеальные дни";
+"statistics.trackersCompleted" = "Трекеров завершено";
+"statistics.averageValue" = "Среднее значение";
+"trackerType.title" = "Создание трекера";
+"createTracker.newHabit" = "Новая привычка";
+"createTracker.editHabit" = "Редактирование привычки";
+"createTracker.placeholder" = "Введите название трекера";
+"createTracker.errorLimit" = "Ограничение 38 символов";
+"createTracker.category" = "Категория";
+"createTracker.schedule" = "Расписание";
+"createTracker.color" = "Цвет";
+"weekday.monday" = "Понедельник";
+"weekday.tuesday" = "Вторник";
+"weekday.wednesday" = "Среда";
+"weekday.thursday" = "Четверг";
+"weekday.friday" = "Пятница";
+"weekday.saturday" = "Суббота";
+"weekday.sunday" = "Воскресенье";
+"weekday.short.monday" = "Пн";
+"weekday.short.tuesday" = "Вт";
+"weekday.short.wednesday" = "Ср";
+"weekday.short.thursday" = "Чт";
+"weekday.short.friday" = "Пт";
+"weekday.short.saturday" = "Сб";
+"weekday.short.sunday" = "Вс";
+"weekday.everyday" = "Каждый день";
+"category.empty" = "Привычки и события можно\nобъединить по смыслу";
+"category.add" = "Добавить категорию";
+"category.new" = "Новая категория";
+"category.namePlaceholder" = "Введите название категории";
+"category.ready" = "Готово";
+"filters.all" = "Все трекеры";
+"filters.today" = "Трекеры на сегодня";
+"filters.completed" = "Завершенные";
+"filters.uncompleted" = "Незавершенные";
+"alert.delete.title" = "Уверены, что хотите удалить трекер?";
