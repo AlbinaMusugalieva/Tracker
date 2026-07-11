@@ -8,7 +8,7 @@
 import UIKit
 
 final class TrackerCell: UICollectionViewCell {
-    private lazy var colorView: UIView = {
+    lazy var colorView: UIView = {
         let view = UIView()
         view.layer.cornerRadius = 16
         view.layer.masksToBounds = true
@@ -99,7 +99,11 @@ final class TrackerCell: UICollectionViewCell {
         colorView.backgroundColor = tracker.color
         trackerCompletionButton.backgroundColor = tracker.color
         
-        daysLabel.text = "\(completedDays) дней"
+        let daysString = String.localizedStringWithFormat(
+            NSLocalizedString("numberOfDays", comment: ""),
+            completedDays
+        )
+        daysLabel.text = daysString
         
         var config = UIButton.Configuration.filled()
         

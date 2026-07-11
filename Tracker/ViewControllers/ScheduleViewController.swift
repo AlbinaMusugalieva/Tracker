@@ -13,12 +13,12 @@ protocol ScheduleViewControllerDelegate: AnyObject {
 
 final class ScheduleViewController: UIViewController {
     weak var delegate: ScheduleViewControllerDelegate?
-    private let weekDays = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"]
+    private let weekDays = ["weekday.monday".localized(), "weekday.tuesday".localized(), "weekday.wednesday".localized(), "weekday.thursday".localized(), "weekday.friday".localized(), "weekday.saturday".localized(), "weekday.sunday".localized()]
     private var selectedDays: [Int] = []
     
     private lazy var titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Расписание"
+        label.text = "createTracker.schedule".localized()
         label.font = .systemFont(ofSize: 16, weight: .medium)
         label.textColor = .label
         label.textAlignment = .center
@@ -41,7 +41,7 @@ final class ScheduleViewController: UIViewController {
     
     private lazy var doneButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Готово", for: .normal)
+        button.setTitle("category.ready".localized(), for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
         button.setTitleColor(.ypWhite, for: .normal)
         button.backgroundColor = .ypBlack
@@ -57,7 +57,7 @@ final class ScheduleViewController: UIViewController {
     }
     
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        super.init(coder: coder)
     }
     
     
@@ -94,8 +94,6 @@ final class ScheduleViewController: UIViewController {
         delegate?.scheduleViewController(self, didSelectDays: selectedDays)
         dismiss(animated: true, completion: nil)
     }
-    
-    
 }
 
 extension ScheduleViewController: UITableViewDataSource, UITableViewDelegate {

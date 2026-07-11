@@ -15,7 +15,7 @@ final class CreateCategoryViewController: UIViewController {
     
     private lazy var textField: UITextField = {
         let textField = UITextField()
-        textField.placeholder = "Введите название категории"
+        textField.placeholder = "category.namePlaceholder".localized()
         textField.backgroundColor = .ypBackground
         textField.textColor = .ypBlack
         textField.font = .systemFont(ofSize: 17, weight: .regular)
@@ -32,7 +32,7 @@ final class CreateCategoryViewController: UIViewController {
     
     private lazy var doneButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Готово", for: .normal)
+        button.setTitle("category.ready".localized(), for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
         button.setTitleColor(.ypWhite, for: .normal)
         button.backgroundColor = .ypGray
@@ -82,7 +82,7 @@ final class CreateCategoryViewController: UIViewController {
     
     private func setupViews() {
         view.backgroundColor = .ypWhite
-        title = "Новая категория"
+        title = "category.new".localized()
         
         view.addSubview(textField)
         view.addSubview(doneButton)

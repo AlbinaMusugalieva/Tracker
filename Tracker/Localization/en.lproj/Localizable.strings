@@ -1,0 +1,58 @@
+/* 
+  Localizable.strings
+  Tracker
+
+  Created by Albina Musugalieva.
+  
+*/
+"trackers.title" = "Trackers";
+"statistics.title" = "Statistics";
+"search.placeholder" = "Search";
+"emptyState.title" = "What will we track?";
+"emptyState.searchTitle" = "Nothing found";
+"filters.button" = "Filters";
+"contextMenu.pinned" = "Pin";
+"contextMenu.unpinned" = "Unpin";
+"contextMenu.edit" = "Edit";
+"contextMenu.delete" = "Delete";
+"cancel" = "Cancel";
+"create" = "Create";
+"save" = "Save";
+"statistics.empty" = "There is nothing to analyze yet";
+"statistics.bestPeriod" = "Best period";
+"statistics.idealDays" = "Ideal days";
+"statistics.trackersCompleted" = "Trackers completed";
+"statistics.averageValue" = "Average value";
+"trackerType.title" = "Tracker creation";
+"createTracker.newHabit" = "New habit";
+"createTracker.editHabit" = "Edit habit";
+"createTracker.placeholder" = "Enter tracker name";
+"createTracker.errorLimit" = "38 character limit";
+"createTracker.category" = "Category";
+"createTracker.schedule" = "Schedule";
+"createTracker.color" = "Color";
+"weekday.monday" = "Monday";
+"weekday.tuesday" = "Tuesday";
+"weekday.wednesday" = "Wednesday";
+"weekday.thursday" = "Thursday";
+"weekday.friday" = "Friday";
+"weekday.saturday" = "Saturday";
+"weekday.sunday" = "Sunday";
+"weekday.short.monday" = "Mon";
+"weekday.short.tuesday" = "Tue";
+"weekday.short.wednesday" = "Wed";
+"weekday.short.thursday" = "Thu";
+"weekday.short.friday" = "Fri";
+"weekday.short.saturday" = "Sat";
+"weekday.short.sunday" = "Sun";
+"weekday.everyday" = "Every day";
+"category.empty" = "Habits and events can be\ngrouped by meaning";
+"category.add" = "Add category";
+"category.new" = "New category";
+"category.namePlaceholder" = "Enter category name";
+"category.ready" = "Ready";
+"filters.all" = "All trackers";
+"filters.today" = "Trackers for today";
+"filters.completed" = "Completed";
+"filters.uncompleted" = "Uncompleted";
+"alert.delete.title" = "Are you sure you want to delete the tracker?";

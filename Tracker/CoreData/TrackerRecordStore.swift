@@ -10,6 +10,16 @@ import CoreData
 
 final class TrackerRecordStore {
     private let context: NSManagedObjectContext
+    var totalRecordsCount: Int {
+        let request = NSFetchRequest<NSFetchRequestResult>(entityName: "TrackerRecordCoreData") 
+        do {
+            let count = try context.count(for: request)
+            return count
+        } catch {
+            print("Ошибка подсчета рекордов в Core Data: \(error)")
+            return 0
+        }
+    }
     
     init() {
         self.context = CoreDataStack.shared.context
